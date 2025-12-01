@@ -1,5 +1,6 @@
 
   #include "w_drawingTool.h"
+  #include <stdlib.h>
 
 /*
  * another tester
@@ -56,6 +57,33 @@ int main(int argc, char *argv[]) {
     }
   }
 
+  // can we setup a 1 way pipe to a second program which will watch the variables as we go through the program?
+  int fd[2];
+  if (pipe(fd) == -1) {
+    perror("pipe");
+    return 1;
+  }
+  pid_t pid = fork();
+  if (pid == -1) {
+    perror("fork");
+    exit(EXIT_FAILURE);
+  }
+
+  // give the addresses of the 2 windows + screenbuffer to the child process
+  if (pid == 0) { // child process
+    close(fd[1]); // close write end
+    dup2(fd[0], STDIN_FILENO); // redirect stdin to read end of pipe
+    execlp("./wwatch", "./wwatch", NULL); // replace with watcher program
+    perror("execlp");
+    exit(EXIT_FAILURE);
+  } else { // parent process
+    close(fd[0]); // close read end
+    // write addresses to pipe
+    write(fd[1], &myWin, sizeof(myWin));
+    write(fd[1], &myWinSolid, sizeof(myWinSolid));
+    write(fd[1], &myScreen, sizeof(myScreen));
+    close(fd[1]); // close write end
+  }
 
   // //print each style of box to verify correct values
   // for (int i = 0; i < 4; i++) { // Line type

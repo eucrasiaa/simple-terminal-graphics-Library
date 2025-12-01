@@ -9,5 +9,8 @@ demo.o: demo.c w_drawingTool.h
 w_drawingTool.o: w_drawingTool.c w_drawingTool.h
 	gcc -g -Wall -Wextra -pedantic -c w_drawingTool.c -o $@
 
+wwatch: watcher.c
+	gcc -g -Wall -Wextra -pedantic watcher.c -o wwatch
+
 clean:
 	rm -f ${OBJS}
