@@ -35,8 +35,8 @@ int main(int argc, char *argv[]) {
   }
   #ifdef ENABLE_DEVKIT
     devkit_init();
-    // debug_connect();
-    // debug_send("Initialized drawing tool\n");
+    debug_connect();
+    debug_send("Initialized drawing tool\n");
   #else
     printf("Devkit not enabled, skipping debugger connection\n");
   #endif
@@ -95,7 +95,7 @@ int main(int argc, char *argv[]) {
   getchar(); // pause to see
 
   #ifdef ENABLE_DEVKIT
-    // debug_close();
+    debug_close();
   #endif
   return 0;
 }
