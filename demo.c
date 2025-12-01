@@ -1,7 +1,7 @@
 
-#include "w_drawingTool.h"
+#include "include/w_drawingTool.h"
 #ifdef ENABLE_DEVKIT
-#include "w_devkit.h"
+#include "include/w_devkit.h"
 #endif
 /*
  * another tester
@@ -17,8 +17,6 @@ int TERM_HEIGHT = 24;
 
 
 int main(int argc, char *argv[]) {
-
-
   #ifdef ENABLE_DEVKIT
     devkit_init();         // start unix socket + shared memory
   #endif
@@ -35,7 +33,6 @@ int main(int argc, char *argv[]) {
     printf("ERROR: failed to initialize drawing tool\n");
     return -1;
   }
-
   #ifdef ENABLE_DEVKIT
     devkit_init();
     // debug_connect();
@@ -97,8 +94,8 @@ int main(int argc, char *argv[]) {
   deleteWindow(myWinSolid);
   getchar(); // pause to see
 
-  // #ifdef ENABLE_DEVKIT
-  //   debug_close();
-  // #endif
+  #ifdef ENABLE_DEVKIT
+    // debug_close();
+  #endif
   return 0;
 }

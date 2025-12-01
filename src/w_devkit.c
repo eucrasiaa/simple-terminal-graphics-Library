@@ -1,5 +1,12 @@
 
-#include "w_devkit.h"
+// #include "w_devkit.h"
+#include "../include/w_devkit.h"
+
+
+int devkit_init(){
+    printf("Devkit init called\n");
+    return 0;
+}
 int debug_connect(){
     debug_fd = socket(AF_UNIX, SOCK_STREAM, 0); // local socket
     // using a UNIX domain socket, so sys/un.h gives the struct we need 

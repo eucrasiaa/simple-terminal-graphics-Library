@@ -4,6 +4,7 @@
         "w_drawingtool.h": "c",
         "un.h": "c",
         "string.h": "c",
-        "stdio.h": "c"
+        "stdio.h": "c",
+        "stdint.h": "c"
     }
 }

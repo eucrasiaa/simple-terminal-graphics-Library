@@ -1,6 +1,7 @@
-#include "w_drawingTool.h"
-#include "w_devkit.h"
-
+// #include "w_drawingTool.h"
+// #include "w_devkit.h"
+#include "../include/w_devkit.h"
+#include "../include/w_types.h"
 
 // why does this 
 

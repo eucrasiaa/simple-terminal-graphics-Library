@@ -2,25 +2,40 @@
 # | core flags
 # ================================
 CC       = gcc
-CFLAGS   = -g -Wall -Wextra -pedantic
+CFLAGS   = -g -Wall -Wextra -pedantic -Iinclude
 SAN_FLAG = -fsanitize=address
 DEV_FLAG = -DENABLE_DEVKIT
 FUCKING_EVIL_DASTARDLY = -Werror # fuck you Werror
 
 # ================================
+# | folder. its just folder
+# ================================
+
+SRC_DIR   = src
+INC_DIR   = include
+OBJ_DIR   = build
+TESTS_DIR = tests # unused at moment
+
+# ================================
 # | sources & such
 # ================================
-CORE_SRC = w_drawingTool.c
-CORE_OBJ = $(CORE_SRC:.c=.o)
+CORE_SRC = $(SRC_DIR)/w_drawingTool.c $(SRC_DIR)/w_types.c
+CORE_OBJ = $(CORE_SRC:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o) #DAMNNNNN
 
-DEVKIT_SRC = w_devkit.c
-DEVKIT_OBJ = $(DEVKIT_SRC:.c=.o)
+# basically const unless specifically modified so can be lieral
+TYPES_SRC    = $(SRC_DIR)/w_types.c
+TYPES_OBJ    = $(OBJ_DIR)/w_types.o
 
-DEMO_SRC = demo.c
-DEMO_OBJ = $(DEMO_SRC:.c=.o)
+DEVKIT_SRC = $(SRC_DIR)/w_devkit.c
+DEVKIT_OBJ = $(OBJ_DIR)/w_devkit.o
 
-WATCH_SRC = watcher.c
-WATCH_OBJ = $(WATCH_SRC:.c=.o)
+DEMO_SRC = demo.c #just chillin in root for now
+DEMO_OBJ = $(OBJ_DIR)/demo.o
+
+WATCH_SRC = $(SRC_DIR)/watcher.c
+WATCH_OBJ = $(OBJ_DIR)/watcher.o
+
+OBJ_DEV = $(CORE_OBJ) $(TYPES_OBJ) $(DEVKIT_OBJ) $(DEMO_OBJ) $(WATCH_OBJ) #core tester requires: core, types, devkit, demo itself, and watcher
 # ig? seems kinda overkill but im tired of edit this file brahhh
 
 # ================================
@@ -29,27 +44,40 @@ WATCH_OBJ = $(WATCH_SRC:.c=.o)
 
 all: demo watch
 
-# no devkit
-demo-raw: $(CORE_OBJ) $(DEMO_OBJ)
-	$(CC) $(CFLAGS) $(DEMO_OBJ) $(CORE_OBJ) -o demo-raw
+# # no devkit. do manual demo.o b/c flag stuff?
+# demo-raw: $(CORE_OBJ) 
+# 	$(CC) $(CFLAGS) $(DEMO_OBJ) $(CORE_OBJ) -o demo-raw
 
 # devkit -> devkit + addressSanatizer
 demo: $(DEVKIT_OBJ) $(CORE_OBJ) $(DEMO_OBJ)
-	$(CC) $(CFLAGS) $(SAN_FLAG) $(DEV_FLAG)  $(DEMO_OBJ) $(CORE_OBJ) $(DEVKIT_OBJ) -o demo-dev
+	$(CC) $(CFLAGS) $(SAN_FLAG) $(DEV_FLAG) $(DEMO_OBJ) $(CORE_OBJ) $(DEVKIT_OBJ) -o demo-dev
+#it gets to a point.
+
 
 watch: $(WATCH_OBJ)
 	$(CC) $(CFLAGS) $(WATCH_OBJ) -o wwatch
 
-#patterns?
-
-%.o: %.c
+#build stuff cause folders now im moving up in this world
+$(OBJ_DIR):
+	mkdir -p $(OBJ_DIR)
+# .c -> .o into build
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-clean: 
-	rm -f $(CORE_OBJ) $(DEVKIT_OBJ) $(DEMO_OBJ) $(WATCH_OBJ) wwatch.o 
-cleanf: clean
-	rm -f demo-raw demo-dev wwatch
+$(OBJ_DIR)/demo.o: demo.c | $(OBJ_DIR)
+	$(CC) $(CFLAGS) $(DEV_FLAG) -c $< -o $@
+# demo is held in root and can just build there too for now
 
+# %.o: %.c
+# 	$(CC) $(CFLAGS) -c $< -o $@
+
+# clean: 
+# 	rm -f $(CORE_OBJ) $(DEVKIT_OBJ) $(DEMO_OBJ) $(WATCH_OBJ) wwatch.o 
+# cleanf: clean
+# 	rm -f demo-raw demo-dev wwatch
+
+# clean:
+# 	rm -rf $(OBJ_DIR) 
 #short for make run demo devkit + run
 rd: demo
 	./demo-dev
@@ -57,6 +85,8 @@ rd: demo
 rw: watch
 	./wwatch
 
+cleanobj:
+	rm -rf $(OBJ_DIR)
 # DEMO_OBJS= demo.o w_drawingTool.o
 # CC = gcc
 # CFLAGS = -g -Wall -Wextra -pedantic

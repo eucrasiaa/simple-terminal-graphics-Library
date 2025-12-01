@@ -1,4 +1,5 @@
-#include "w_drawingTool.h"
+// #include "w_drawingTool.h" headers now in include so
+#include "../include/w_drawingTool.h"
 /*
  * as usual, handwriten by yours truly
  * created by Will C. (eucrasiaa)
@@ -6,9 +7,9 @@
  * a barebones terminal drawing tool, supporting windows, colors, UTF-8 (painstakingly), etc
  */
 
-char *COLOR_ARRAY[] = {
-    A_RESET, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE, BLACK
-};
+// char *COLOR_ARRAY[] = {
+//     A_RESET, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE, BLACK
+// };
 
 
 
