@@ -12,5 +12,13 @@ w_drawingTool.o: w_drawingTool.c w_drawingTool.h
 wwatch: watcher.c
 	gcc -g -Wall -Wextra -pedantic watcher.c -o wwatch
 
+wwatch.o: watcher.c
+	gcc -g -Wall -Wextra -pedantic -c watcher.c -o $@
+
 clean:
 	rm -f ${OBJS}
+# makes watcher, and then makes main program. just 2 separate
+msD: wwatch.o $(OBJS)
+	gcc -g -Wall -Wextra -pedantic wwatch.o -o wwatch
+	gcc -g -Wall -Wextra -pedantic $(OBJS) -o msD 
+	

@@ -13,8 +13,11 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
+#include <stdlib.h>
+#include <sys/socket.h>
+#include <sys/un.h>
 
-
+#define MY_SOCKET_PATH "/tmp/wtui_socket"
 #define A_ESC "\033["
 #define A_RESET "\033[0m"
 #define RED "\033[1;31m"
@@ -163,6 +166,13 @@ typedef struct screenBuffer{
 
 screenBuffer_t * initWDrawTool(unsigned int termRows, unsigned int termCols);
 w_window_t *w_createWindow(unsigned int rows, unsigned int cols, unsigned int x, unsigned int y, const char* title, int active);
+
+
+static int debug_fd = -1;
+
+int debug_connect();
+void debug_send(const char *msg);
+void debug_close();
 
 // perhaps have draw function int returns be used to track the loaded window in a screen buffer, so we can manage them later? 
 // draw functions load into the drawing buffer for the given screen

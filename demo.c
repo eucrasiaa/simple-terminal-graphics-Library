@@ -1,6 +1,5 @@
 
-  #include "w_drawingTool.h"
-  #include <stdlib.h>
+#include "w_drawingTool.h"
 
 /*
  * another tester
@@ -12,6 +11,7 @@
 
 int TERM_WIDTH = 80;
 int TERM_HEIGHT = 24;
+
 
 
 int main(int argc, char *argv[]) {
@@ -30,7 +30,10 @@ int main(int argc, char *argv[]) {
 
   
   // make a window
-
+  // ensure watcher is running before 
+  debug_connect();
+  debug_send("Initialized drawing tool\n");
+  debug_close();
 
 
   w_window_t* myWin = w_createWindow(10, 40, 5, 5, "Test Window", 1);
@@ -56,35 +59,13 @@ int main(int argc, char *argv[]) {
       cell->flags = 0;
     }
   }
+  // printf("launch debugger!\n");
+  // getchar();
+  // debug_connect();
+  // debug_send("test test test\n");
 
-  // can we setup a 1 way pipe to a second program which will watch the variables as we go through the program?
-  int fd[2];
-  if (pipe(fd) == -1) {
-    perror("pipe");
-    return 1;
-  }
-  pid_t pid = fork();
-  if (pid == -1) {
-    perror("fork");
-    exit(EXIT_FAILURE);
-  }
-
-  // give the addresses of the 2 windows + screenbuffer to the child process
-  if (pid == 0) { // child process
-    close(fd[1]); // close write end
-    dup2(fd[0], STDIN_FILENO); // redirect stdin to read end of pipe
-    execlp("./wwatch", "./wwatch", NULL); // replace with watcher program
-    perror("execlp");
-    exit(EXIT_FAILURE);
-  } else { // parent process
-    close(fd[0]); // close read end
-    // write addresses to pipe
-    write(fd[1], &myWin, sizeof(myWin));
-    write(fd[1], &myWinSolid, sizeof(myWinSolid));
-    write(fd[1], &myScreen, sizeof(myScreen));
-    close(fd[1]); // close write end
-  }
-
+  // debug_close();
+  
   // //print each style of box to verify correct values
   // for (int i = 0; i < 4; i++) { // Line type
   //   printf("Line type %d:\n", i);
