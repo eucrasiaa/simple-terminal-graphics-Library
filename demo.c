@@ -1,6 +1,8 @@
 
 #include "w_drawingTool.h"
-
+#ifdef ENABLE_DEVKIT
+#include "w_devkit.h"
+#endif
 /*
  * another tester
  * made by Will.
@@ -15,6 +17,12 @@ int TERM_HEIGHT = 24;
 
 
 int main(int argc, char *argv[]) {
+
+
+  #ifdef ENABLE_DEVKIT
+    devkit_init();         // start unix socket + shared memory
+  #endif
+  
   struct winsize w;
   ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
   TERM_WIDTH = w.ws_col;
@@ -28,12 +36,13 @@ int main(int argc, char *argv[]) {
     return -1;
   }
 
-  
-  // make a window
-  // ensure watcher is running before 
-  debug_connect();
-  debug_send("Initialized drawing tool\n");
-  debug_close();
+  #ifdef ENABLE_DEVKIT
+    devkit_init();
+    // debug_connect();
+    // debug_send("Initialized drawing tool\n");
+  #else
+    printf("Devkit not enabled, skipping debugger connection\n");
+  #endif
 
 
   w_window_t* myWin = w_createWindow(10, 40, 5, 5, "Test Window", 1);
@@ -87,5 +96,9 @@ int main(int argc, char *argv[]) {
   deleteWindow(myWin); //screen carries copy, so delete both
   deleteWindow(myWinSolid);
   getchar(); // pause to see
+
+  // #ifdef ENABLE_DEVKIT
+  //   debug_close();
+  // #endif
   return 0;
 }

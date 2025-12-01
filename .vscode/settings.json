@@ -3,6 +3,7 @@
         "unistd.h": "c",
         "w_drawingtool.h": "c",
         "un.h": "c",
-        "string.h": "c"
+        "string.h": "c",
+        "stdio.h": "c"
     }
 }

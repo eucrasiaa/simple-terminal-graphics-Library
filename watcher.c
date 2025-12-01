@@ -1,8 +1,6 @@
 #include "w_drawingTool.h"
-#include <stdio.h>
-#include <unistd.h>
-#include <sys/socket.h>
-#include <sys/un.h>
+#include "w_devkit.h"
+
 
 // why does this 
 

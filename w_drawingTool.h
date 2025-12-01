@@ -6,7 +6,6 @@
  * last update: 29-11-2025
  * a barebones terminal drawing tool, supporting windows, colors, UTF-8 (painstakingly), etc
  */
-
 #include <sys/ioctl.h>
 #include <termios.h>
 #include <unistd.h>
@@ -14,10 +13,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
-#include <sys/socket.h>
-#include <sys/un.h>
 
-#define MY_SOCKET_PATH "/tmp/wtui_socket"
 #define A_ESC "\033["
 #define A_RESET "\033[0m"
 #define RED "\033[1;31m"
@@ -30,7 +26,7 @@
 #define BLACK "\033[1;30m"
 
 #define COLOR_COUNT 9
-extern char *COLOR_ARRAY[];
+// extern char *COLOR_ARRAY[];
 
 
 enum { TOPLEFT=0, TOPRIGHT=1, BOTTOMLEFT=2, BOTTOMRIGHT=3,
@@ -168,11 +164,6 @@ screenBuffer_t * initWDrawTool(unsigned int termRows, unsigned int termCols);
 w_window_t *w_createWindow(unsigned int rows, unsigned int cols, unsigned int x, unsigned int y, const char* title, int active);
 
 
-static int debug_fd = -1;
-
-int debug_connect();
-void debug_send(const char *msg);
-void debug_close();
 
 // perhaps have draw function int returns be used to track the loaded window in a screen buffer, so we can manage them later? 
 // draw functions load into the drawing buffer for the given screen
