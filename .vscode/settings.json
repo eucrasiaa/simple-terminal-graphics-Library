@@ -8,6 +8,7 @@
         "stdint.h": "c",
         "shm.h": "c",
         "mman.h": "c",
-        "w_devkit.h": "c"
+        "w_devkit.h": "c",
+        "fcntl.h": "c"
     }
 }

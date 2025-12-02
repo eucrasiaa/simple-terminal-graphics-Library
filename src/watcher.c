@@ -15,67 +15,59 @@ int handleCommand(char* command, int length){
     return 0;
 }
 
+
 int main() {
 
-    devkit_init_t devkit_data = watcher_init();
-    if (devkit_data.shm_ptr == NULL) {
+    shared_block_t* w_shmblk = watcher_init();
+    if (w_shmblk == NULL) {
         fprintf(stderr, "Failed to initialize shared memory\n");
         return 1;
     }
-    void *shm_ptr = devkit_data.shm_ptr;
-    pthread_mutex_t *mutex = devkit_data.mutex;
-    int shm_id = devkit_data.shm_id;
-    printf("Watcher DK Status: Shared Mem @ %p, Mutex @ %p, SHM ID: %d\n", shm_ptr, mutex, shm_id);
-    // wait until we can acquire the mutex
-    // i usleep on main before trying to reequire, but this still cant get it in time? why?
-    while (pthread_mutex_trylock(mutex) != 0) {
-        // failed to acquire lock, wait a bit
-        usleep(1000); // 10 ms
-    }
-    printf("Mutex locked, reading shared memory\n");
-    int *init_flag = (int *)(shm_ptr + sizeof(pthread_mutex_t));
-    printf("Initialization flag value: %d\n", *init_flag);
-    pthread_mutex_unlock(mutex);
-    printf("Mutex unlocked for watcher\n");
-    // // read offset 0 as int
-    // int *data_ready = (int *)shm_ptr;
-    // printf("Data ready flag at start of shm: %d\n", *data_ready);
-    return 0;
+    printf("DK Status: Shared Mem @ %p, Mutex @ %p\n", w_shmblk, &w_shmblk->header.mutex);
+    
+
     // void *win1, *win2, *screen;
     // read(STDIN_FILENO, &win1, sizeof(win1));
     // read(STDIN_FILENO, &win2, sizeof(win2));
     // read(STDIN_FILENO, &screen, sizeof(screen));
     // // printf("Received addresses: win1=%p, win2=%p, screen=%p\n", win1, win2, screen);
 
-    int server_fd = socket(AF_UNIX, SOCK_STREAM, 0); 
-    struct sockaddr_un addr;
-    memset(&addr, 0, sizeof(addr));
-    addr.sun_family = AF_UNIX;
-    strncpy(addr.sun_path, MY_SOCKET_PATH, sizeof(addr.sun_path) - 1);
-    unlink(MY_SOCKET_PATH); //  this removes any existing socket file, good practice?
-    bind(server_fd, (struct sockaddr*)&addr, sizeof(addr));
-    listen(server_fd, 5); // arbetrary 5 ig
-    printf("Debugger listening on %s\n", MY_SOCKET_PATH);
-    // accept 
-    int client_fd = accept(server_fd, NULL, NULL);
-    int SHARE_MEM_POSITIONAL[] = { 0, sizeof(pthread_mutex_t) , sizeof(int) + sizeof(pthread_mutex_t)};
-    // loop and wait until mutex is available
-    while (1) {
-        // if (pthread_mutex_trylock(mutex) == 0) {
-        //     // got the lock
-        //     printf("Mutex locked, reading shared memory\n");
-        //     // skip mutex area
-        //     void *ptr = shm_ptr + sizeof(pthread_mutex_t);
-        //     // read data ready flag
-        //     int *data_ready = (int *)ptr;
-        //     printf("Data ready flag: %d\n", *data_ready);
-        //     // give back up mutex
-        //     pthread_mutex_unlock(mutex);
-        //     break;
-        // }
-        // else sleep a bit and try again
-        usleep(10000); // 10 ms
+        // int server_fd = socket(AF_UNIX, SOCK_STREAM, 0); 
+        // struct sockaddr_un addr;
+        // memset(&addr, 0, sizeof(addr));
+        // addr.sun_family = AF_UNIX;
+        // strncpy(addr.sun_path, MY_SOCKET_PATH, sizeof(addr.sun_path) - 1);
+        // unlink(MY_SOCKET_PATH); //  this removes any existing socket file, good practice?
+        // bind(server_fd, (struct sockaddr*)&addr, sizeof(addr));
+        // listen(server_fd, 5); // arbetrary 5 ig
+        // printf("Debugger listening on %s\n", MY_SOCKET_PATH);
+        // // accept 
+        // int client_fd = accept(server_fd, NULL, NULL);
+    // how to get this to wait for the cond_wait
+    printf("Debugger connected.\n");
+    pthread_mutex_lock(&w_shmblk->header.mutex);
+    while(1){
+        while (w_shmblk->header.data_size == 0){
+            //unlocks and waits?
+            pthread_cond_wait(&w_shmblk->header.cond, &w_shmblk->header.mutex);
+            //locks on return
+        }
+        // have lock and told to write
+        // check data flags, assume just int in curernt test
+        if (w_shmblk->header.data_flags & SHM_FLAG_DEV_INT32){
+            int32_t *shared_int = (int32_t *)( (void *)w_shmblk + SHM_HEADER_SIZE);
+            printf("Received int32 from shared memory: %d\n", *shared_int);
+        }
+        // after processing, clear data size to 0 to wait for next write
+        cleanup_post_write(w_shmblk);
+
     }
+
+    // safety?
+    pthread_mutex_unlock(&w_shmblk->header.mutex);
+    // loop and wait until mutex is available
+
+
     ///
     // char buffer[256];
     // int listening = 1;
@@ -105,9 +97,9 @@ int main() {
     // }
 
     // close
-    close(client_fd);
-    close(server_fd);
-    unlink(MY_SOCKET_PATH);
+    // close(client_fd);
+    // close(server_fd);
+    // unlink(MY_SOCKET_PATH);
 
     // getchar(); // wait for input before exiting
     return 0;

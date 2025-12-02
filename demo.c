@@ -20,29 +20,30 @@ int main(int argc, char *argv[]) {
   
   #ifdef ENABLE_DEVKIT
     resetShareMem();
-    devkit_init_t devkit_init_data = devkit_init();         // start unix socket + shared memory
-    // we convert to local variables for ease of use
-    void *shm_ptr = devkit_init_data.shm_ptr;
-    pthread_mutex_t *mutex = devkit_init_data.mutex;
-    int shm_id = devkit_init_data.shm_id;
-    // we lock the mutex to claim shared memory
-    printf("DK Status: Shared Mem @ %p, Mutex @ %p, SHM ID: %d\n", shm_ptr, mutex, shm_id);
+    shared_block_t* w_shmblk = devkit_init();         // start unix socket + shared memory
+    if (w_shmblk == NULL) {
+      fprintf(stderr, "Failed to initialize devkit\n");
+      return -1;
+    }
+    dvkt_init_critSyncStuff(w_shmblk);
+    printf("id is %d\n", w_shmblk->header.shm_id);
+    printf("DK Status: Shared Mem @ %p, Mutex @ %p\n", w_shmblk, &w_shmblk->header.mutex);
     // debug_connect();
     debug_send("Initialized drawing tool\n");
-    // init mutex at start of shm
-    int result = pthread_mutex_lock(mutex);
-    printf("Mutex lock result: %d\n", result);
-    printf("Mutex locked for drawing tool initialization\n");
+    void *shm_ptr = w_shmblk;
+    printf("press enter to init dev write");
     getchar();
-    // put int 5555 after mutex to indicate drawing tool is ready
-    int *init_flag = (int *)(shm_ptr + sizeof(pthread_mutex_t));
-    *init_flag = 5555;
-    printf("Initialization flag set to 5555\n");
-    pthread_mutex_unlock(mutex);
-    printf("Mutex unlocked for drawing tool initialization\n");
-    usleep(1000000); // give watcher time to read
-    pthread_mutex_lock(mutex);
-    printf("watcher finished reading\n");
+    // writing 1 int32 to shared memory to test
+    pre_write(w_shmblk, SHM_FLAG_DEV_INT32, 1);
+    // now safely write at payload slot
+    int32_t *shared_int = (int32_t *)(shm_ptr + SHM_HEADER_SIZE);
+    *shared_int = 413;
+    printf("Wrote int32 %d to shared memory\n", *shared_int);
+    post_write(w_shmblk);
+    printf("watcher SHOULD catch now.\npress enter to continue\n");
+    getchar();
+
+
     // // at end of intitialization, shared mem is attached and mutex is initialized and claimed
   #endif
   // sizeof all w_types
@@ -123,9 +124,9 @@ int main(int argc, char *argv[]) {
 
   #ifdef ENABLE_DEVKIT
     debug_close();
-    if(kill_devkit((devkit_init_t){shm_ptr, mutex, shm_id}) != 0) {
-      fprintf(stderr, "Failed to kill devkit\n");
-    }
+    // kill_devkit(w_shmblk);
+    resetShareMem();
+
     
   #endif
   return 0;
