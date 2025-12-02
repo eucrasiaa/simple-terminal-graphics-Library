@@ -19,7 +19,18 @@ int TERM_HEIGHT = 24;
 int main(int argc, char *argv[]) {
   #ifdef ENABLE_DEVKIT
     devkit_init();         // start unix socket + shared memory
+      int shm_id = shmget(DEBUGKEY, SHM_SIZE, IPC_CREAT | 0666);
+      if (shm_id < 0) {
+          perror("shmget failed");
+          return 1;
+      }
+      // attach
+      void *shm_ptr = shmat(shm_id, NULL, 0);
+      printf("Shared memory segment created with ID: %d\n", shm_id);
+      printf("Shared memory attached at address: %p\n", shm_ptr);
   #endif
+  
+
   
   struct winsize w;
   ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);

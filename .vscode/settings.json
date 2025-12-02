@@ -6,6 +6,7 @@
         "string.h": "c",
         "stdio.h": "c",
         "stdint.h": "c",
-        "shm.h": "c"
+        "shm.h": "c",
+        "mman.h": "c"
     }
 }
