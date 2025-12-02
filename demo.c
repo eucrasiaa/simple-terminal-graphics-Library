@@ -32,7 +32,7 @@ int main(int argc, char *argv[]) {
     debug_send("Initialized drawing tool\n");
     void *shm_ptr = w_shmblk;
     printf("press enter to init dev write");
-    getchar();
+    // getchar();
     // writing 1 int32 to shared memory to test
     pre_write(w_shmblk, SHM_FLAG_DEV_INT32, 1);
     // now safely write at payload slot
@@ -41,9 +41,7 @@ int main(int argc, char *argv[]) {
     printf("Wrote int32 %d to shared memory\n", *shared_int);
     post_write(w_shmblk);
     printf("watcher SHOULD catch now.\npress enter to continue\n");
-    getchar();
-
-
+    // getchar();
     // // at end of intitialization, shared mem is attached and mutex is initialized and claimed
   #endif
   // sizeof all w_types
@@ -115,13 +113,27 @@ int main(int argc, char *argv[]) {
   w_boxAWindow(myWinSolid, SINGLE|ROUNDED); // single line, sharp corners
   w_draw(myScreen, myWin);
   w_drawAt(myScreen, myWinSolid, 5, 5); // draw at 5,5
+    getchar();
+    initRawMode();
+    getchar();
   wSetTermClear();
+
   wRenderScreen(myScreen);
+  clearDrawBuff(myScreen);
+
+  // getchar(); // pause to see
+  // wSetTermClear();
+  // fillWithChar(myWinSolid, 'X');
+  // w_drawAt(myScreen, myWinSolid, 0, 0); // draw at 0,0
+  // wRenderScreen(myScreen);
+  // getchar(); // pause to see
+  //
+
   deleteScreen(myScreen);
   deleteWindow(myWin); //screen carries copy, so delete both
   deleteWindow(myWinSolid);
   getchar(); // pause to see
-
+  restoreTermMode();
   #ifdef ENABLE_DEVKIT
     debug_close();
     // kill_devkit(w_shmblk);

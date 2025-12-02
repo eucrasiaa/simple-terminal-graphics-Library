@@ -48,6 +48,10 @@
 //     return (char)( (cornertype << 2) | linetype );
 // }
 
+extern struct termios orig_termios;
+void initRawMode();
+void restoreTermMode();
+
 
 screenBuffer_t * initWDrawTool(unsigned int termRows, unsigned int termCols);
 w_window_t *w_createWindow(unsigned int rows, unsigned int cols, unsigned int x, unsigned int y, const char* title, int active);
@@ -71,6 +75,7 @@ int putRawChar(uint32_t ch, uint8_t color);
 int putFrame(w_frame_t printMe);
 int fillWithChar(w_window_t *win, uint32_t ch);
 int fillWithFrame(w_window_t *win, const w_frame_t frame);
+
 /*
     U+250x	─	━	│	┃	┄	┅	┆	┇	┈	┉	┊	┋	┌	┍	┎	┏
     U+251x	┐	┑	┒	┓	└	┕	┖	┗	┘	┙	┚	┛	├	┝	┞	┟

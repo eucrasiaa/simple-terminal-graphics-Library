@@ -11,7 +11,17 @@
 //     A_RESET, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE, BLACK
 // };
 
+extern struct termios orig_termios;
+void initRawMode() {
+    tcgetattr(STDIN_FILENO, &orig_termios);
+    struct termios raw = orig_termios;
+    raw.c_lflag &= ~(ECHO | ICANON); // disable echo and canonical mode
+    tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
+}
 
+void restoreTermMode() {
+    tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig_termios);
+}
 
 int deleteWindow(w_window_t *win){
     if (win == NULL) {
