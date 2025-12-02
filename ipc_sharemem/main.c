@@ -62,6 +62,9 @@ int main(){
         perror("shmdt failed");
         return 1;
     }
-    shmctl(shm_id, IPC_RMID, NULL); // mark for deletion
+    if (shmctl(shm_id, IPC_RMID, NULL) < 0) {
+        perror("shmctl(IPC_RMID) failed");
+        return 1; 
+    }
     return 0;
 }

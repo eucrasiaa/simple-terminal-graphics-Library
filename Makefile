@@ -2,7 +2,7 @@
 # | core flags
 # ================================
 CC       = gcc
-CFLAGS   = -g -Wall -Wextra -pedantic -Iinclude
+CFLAGS   = -g -Wall -Wextra -pedantic -Iinclude -pthread
 SAN_FLAG = -fsanitize=address
 DEV_FLAG = -DENABLE_DEVKIT
 FUCKING_EVIL_DASTARDLY = -Werror # fuck you Werror
@@ -54,8 +54,8 @@ demo: $(DEVKIT_OBJ) $(CORE_OBJ) $(DEMO_OBJ)
 #it gets to a point.
 
 
-watch: $(WATCH_OBJ)
-	$(CC) $(CFLAGS) $(WATCH_OBJ) -o wwatch
+watch: $(WATCH_OBJ) $(DEVKIT_OBJ) $(TYPES_OBJ)
+	$(CC) $(CFLAGS) $(WATCH_OBJ) $(DEVKIT_OBJ) $(TYPES_OBJ) -o wwatch
 
 #build stuff cause folders now im moving up in this world
 $(OBJ_DIR):

@@ -16,4 +16,3 @@ try to aquire and itll end up storing copies of all the variables
 on every variable or modification, write, give up mutex, then on reaquire (meaning the watcher finished copying), resume code
 
 
-

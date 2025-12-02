@@ -17,19 +17,41 @@ int TERM_HEIGHT = 24;
 
 
 int main(int argc, char *argv[]) {
-  #ifdef ENABLE_DEVKIT
-    devkit_init();         // start unix socket + shared memory
-      int shm_id = shmget(DEBUGKEY, SHM_SIZE, IPC_CREAT | 0666);
-      if (shm_id < 0) {
-          perror("shmget failed");
-          return 1;
-      }
-      // attach
-      void *shm_ptr = shmat(shm_id, NULL, 0);
-      printf("Shared memory segment created with ID: %d\n", shm_id);
-      printf("Shared memory attached at address: %p\n", shm_ptr);
-  #endif
   
+  #ifdef ENABLE_DEVKIT
+    resetShareMem();
+    devkit_init_t devkit_init_data = devkit_init();         // start unix socket + shared memory
+    // we convert to local variables for ease of use
+    void *shm_ptr = devkit_init_data.shm_ptr;
+    pthread_mutex_t *mutex = devkit_init_data.mutex;
+    int shm_id = devkit_init_data.shm_id;
+    // we lock the mutex to claim shared memory
+    printf("DK Status: Shared Mem @ %p, Mutex @ %p, SHM ID: %d\n", shm_ptr, mutex, shm_id);
+    // debug_connect();
+    debug_send("Initialized drawing tool\n");
+    // init mutex at start of shm
+    int result = pthread_mutex_lock(mutex);
+    printf("Mutex lock result: %d\n", result);
+    printf("Mutex locked for drawing tool initialization\n");
+    getchar();
+    // put int 5555 after mutex to indicate drawing tool is ready
+    int *init_flag = (int *)(shm_ptr + sizeof(pthread_mutex_t));
+    *init_flag = 5555;
+    printf("Initialization flag set to 5555\n");
+    pthread_mutex_unlock(mutex);
+    printf("Mutex unlocked for drawing tool initialization\n");
+    usleep(1000000); // give watcher time to read
+    pthread_mutex_lock(mutex);
+    printf("watcher finished reading\n");
+    // // at end of intitialization, shared mem is attached and mutex is initialized and claimed
+  #endif
+  // sizeof all w_types
+  printf("sizeof(screenBuffer_t) = %lu bytes\n", sizeof(screenBuffer_t));
+  printf("sizeof(w_window_t) = %lu bytes\n", sizeof(w_window_t));
+  printf("sizeof(w_windowManager_t) = %lu bytes\n", sizeof(w_windowManager_t));
+  printf("sizeof(w_framebuffer_t) = %lu bytes\n", sizeof(w_framebuffer_t));
+  printf("sizeof(w_frame_t) = %lu bytes\n", sizeof(w_frame_t));
+
 
   
   struct winsize w;
@@ -44,13 +66,7 @@ int main(int argc, char *argv[]) {
     printf("ERROR: failed to initialize drawing tool\n");
     return -1;
   }
-  #ifdef ENABLE_DEVKIT
-    devkit_init();
-    debug_connect();
-    debug_send("Initialized drawing tool\n");
-  #else
-    printf("Devkit not enabled, skipping debugger connection\n");
-  #endif
+
 
 
   w_window_t* myWin = w_createWindow(10, 40, 5, 5, "Test Window", 1);
@@ -107,6 +123,10 @@ int main(int argc, char *argv[]) {
 
   #ifdef ENABLE_DEVKIT
     debug_close();
+    if(kill_devkit((devkit_init_t){shm_ptr, mutex, shm_id}) != 0) {
+      fprintf(stderr, "Failed to kill devkit\n");
+    }
+    
   #endif
   return 0;
 }
